@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Map with 3D Buildings</title>
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.css" rel="stylesheet">
+  <style>
+    body { margin: 0; padding: 0; }
+    #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<script>
+  mapboxgl.accessToken = 'pk.eyJ1Ijoic3RlcGhzY2hvYmVyODgiLCJhIjoiY2x5bWMwODUwMDkyOTJpcHQ0MmtrZm4wMiJ9.ulmOS-CC67yqkXdZiH_cSw';
+
+  const map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/dark-v10', // Dark base map
+    center: [-73.93551, 40.7764], // NYC coordinates
+    zoom: 15,
+    pitch: 45, // Tilt the map
+    bearing: 0, // Initial bearing
+  });
+
+  map.on('load', () => {
+    // Add 3D buildings layer with styled fill based on height
+    map.addLayer({
+      'id': '3d-buildings',
+      'source': 'composite',
+      'source-layer': 'building',
+      'filter': ['==', 'extrude', 'true'],
+      'type': 'fill-extrusion',
+      'minzoom': 15,
+      'paint': {
+        'fill-extrusion-color': {
+          'property': 'height',
+          'stops': [
+            [0, '#fade9a'],
+            [10, '#b02075'],
+            [30, '#f7a779'],
+            [100, '#821c75']
+          ]
+        },
+        'fill-extrusion-height': ['get', 'height'],
+        'fill-extrusion-base': ['get', 'min_height'],
+        'fill-extrusion-opacity': 0.6,
+      },
+    });
+
+    // Function to rotate the map gradually
+    function rotateMap(timestamp) {
+      // Update the bearing by a small increment
+      map.setBearing(map.getBearing() + 0.1);
+      // Request the next frame of the animation
+      requestAnimationFrame(rotateMap);
+    }
+
+    // Start rotating the map
+    rotateMap();
+
+  });
+</script>
+
+</body>
+</html>
